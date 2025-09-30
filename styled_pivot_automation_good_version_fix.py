@@ -518,10 +518,21 @@ def create_final_report(file_path, output_path):
         pivot_groups = {
             'LRC_VFA_Report': [
                 {
-                    'title': 'בדיקת סיווג רכיבי LRC לחשבונות GL הנכונים', 'filters': {'class_col': ['VFP'], 'loss_comp_col': [0], 'lifecycle_col': [0, 10], 'sub_acc_col': '1', 'proc_step_col': ['carry forward', 'release margin', 'value TC']}, 'proc_step_filter': 'not_contains', 'index': ['coverage_id_col'], 'columns': 'cost_elem_col', 'column_filter': ['6000', 'Z2002', 'Z4000', 'Z3100', 'Z1013', 'Z2004', 'Z1017', 'Z2005', 'Z2007', 'Z2012', 'Z2017', 'Z2008', 'Z5040', 'Z5050', 'Z6001']
+                    'title': 'בדיקת סיווג רכיבי LRC לחשבונות GL הנכונים', 
+                    'filters': {
+                        'class_col': ['VFP'], 
+                        'loss_comp_col': [0], 
+                        'lifecycle_col': [0, 10], 
+                        'sub_acc_col': '1', 
+                        'proc_step_col': ['carry forward', 'Release Margin (PE/DE Before Change)', 'Value TC (Ins. Contracts) (Period Start)']
+                    }, 
+                    'proc_step_filter': 'not_contains', 
+                    'index': ['coverage_id_col'], 
+                    'columns': 'cost_elem_col', 
+                    'column_filter': ['6000', 'Z2002', 'Z4000', 'Z3100', 'Z1013', 'Z2004', 'Z1017', 'Z2005', 'Z2007', 'Z2012', 'Z2017', 'Z2008', 'Z5040', 'Z5050', 'Z6001']
                 },
                 {
-                    'title': 'G/L Account Analysis', 'filters': {'class_col': ['VFP'], 'loss_comp_col': [0], 'proc_step_col': ['carry forward', 'release margin', 'value TC'], 'gl_col': '^[12]'}, 'proc_step_filter': 'not_contains', 'gl_col_filter': 'regex', 'index': ['gl_col', 'desc_gl_col', 'cost_elem_col'], 'columns': 'date_col' 
+                    'title': 'G/L Account Analysis', 'filters': {'class_col': ['VFP'], 'loss_comp_col': [0], 'proc_step_col': ['carry forward', 'Release Margin (PE/DE Before Change)', 'Value TC (Ins. Contracts) (Period Start)'], 'gl_col': '^[12]'}, 'proc_step_filter': 'not_contains', 'gl_col_filter': 'regex', 'index': ['gl_col', 'desc_gl_col', 'cost_elem_col'], 'columns': 'date_col'
                 },
                 {
                     'title': 'בדיקת סבירות היוונים', 'filters': {'class_col': ['VFP'], 'loss_comp_col': [0], 'lifecycle_col': [0, 10], 'sub_acc_col': '1', 'proc_step_col': ['Capture (Central GAAP) (PE/DE Bef. Chg.)', 'Capture (Central GAAP) (PS - Bef. Chge)', 'Unwind & Release (PS - Before Change)', 'Unwind and Release (PE/DE Before Change)']}, 'proc_step_filter': 'isin', 'index': ['cost_elem_col', 'proc_step_col'], 'columns': 'date_col'
