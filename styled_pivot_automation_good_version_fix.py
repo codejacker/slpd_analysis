@@ -178,7 +178,7 @@ def create_lrc_cycle_table(writer, sheet_name, pvbe_df, ra_df, pivot_spec, start
         new_columns = [(val, q_label) for q in quarters for val in ['PVBE', 'RA'] if (val, (q_label := quarter_mapping.get(q, str(q)))) in pivot_df.columns]
         pivot_df = pivot_df[new_columns]
         finance_rows = ['צבירת ריבית', 'שינוי בריבית שוטפת', 'אינפלציה']
-        pivot_df.loc['הוצאות מימון'] = pivot_df.loc[finance_rows].sum()
+        closing_rows = ['יתרת פתיחה', 'עסק חדש', 'שחרור', 'תיאומים בהתאם לניסיון', 'שינוי הנחות', 'שינוי ל LRR', 'זקיפה לCSM', 'הוצאות מימון']
         pivot_df.loc['יתרת סגירה ליום'] = pivot_df.loc[closing_rows].sum()
 
         # --- NEW LOGIC FOR VALIDATION CHECK ---
@@ -332,6 +332,16 @@ def create_lic_cycle_table(writer, sheet_name, filtered_out_df, filtered_in_df, 
                        'שינויים המתייחסים לשירותי עבר- תיאום להתחייבויות בגין תביעות שהתהוו', 'שינוי ל LRR', 'הוצאות מימון']
         pivot_df.loc['יתרת סגירה ליום'] = pivot_df.loc[closing_rows].sum()
         
+        # Calculate validation check (closing balance - sum of movements)
+        validation_rows = [
+            'יתרת פתיחה', 'תביעות והוצאות שירותי ביטוח אחרות שהתהוו', 'שחרור', 
+            'תיאומים בהתאם לניסיון', 'שינוי הנחות', 
+            'שינויים המתייחסים לשירותי עבר- תיאום להתחייבויות בגין תביעות שהתהוו', 
+            'שינוי ל LRR', 'הוצאות מימון'
+        ]
+        movements_sum = pivot_df.loc[validation_rows].sum()
+        pivot_df.loc['Check - תקין'] = movements_sum - pivot_df.loc['יתרת סגירה ליום']
+        
         final_row_order = [spec['name'] for spec in row_specs]
         pivot_df = pivot_df.reindex(final_row_order)
 
@@ -459,9 +469,35 @@ def get_filtered_df(df, spec, all_cols):
             display_filters[col_name] = values
     return filtered_df, display_filters
 
+def get_slpd_sheet_name(file_path):
+    """Get the sheet name containing 'SLPD' or return 'Sheet1' if not found"""
+    try:
+        xl = pd.ExcelFile(file_path)
+        sheet_names = xl.sheet_names
+        
+        # First try to find sheet with 'SLPD' in the name
+        slpd_sheets = [sheet for sheet in sheet_names if 'SLPD' in sheet.upper()]
+        if slpd_sheets:
+            return slpd_sheets[0]
+            
+        # If no SLPD sheet found and only one sheet exists, return that sheet
+        if len(sheet_names) == 1:
+            return sheet_names[0]
+            
+        # Default to Sheet1
+        return 'Sheet1'
+    except Exception as e:
+        print(f"Error reading Excel file: {e}")
+        return 'Sheet1'
+
 def create_final_report(file_path, output_path):
     try:
-        df = pd.read_excel(file_path, sheet_name='SLPD', header=0)
+        # Get the appropriate sheet name
+        sheet_name = get_slpd_sheet_name(file_path)
+        print(f"Using sheet: {sheet_name}")
+        
+        # Read the Excel file with the detected sheet name
+        df = pd.read_excel(file_path, sheet_name=sheet_name, header=0)
         all_cols = {
             'amount_col': 'Amount in Functional Currency', 'date_col': 'Posting Date',
             'class_col': 'Classification', 'cost_elem_col': 'Cost or Revenue Element',
